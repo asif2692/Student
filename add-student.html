@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Add Student - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .preview-img {
+      width: 100%;
+      max-width: 120px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+    }
+    .course-card {
+      transition: transform 0.2s ease;
+    }
+    .course-card:hover {
+      transform: translateY(-2px);
+    }
+    .auto-generate-btn {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .auto-generate-btn:hover {
+      background-color: #e9ecef;
+    }
+    .is-invalid {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    .is-valid {
+      border-color: #198754;
+      box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <!-- ✅ Enhanced Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <i class="fas fa-graduation-cap me-2"></i>Student Portal
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div id="topNav" class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" href="add-student.html">
+              <i class="fas fa-user-plus me-1"></i>Add Student
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="courses.html">
+              <i class="fas fa-book me-1"></i>Courses
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="report.html">
+              <i class="fas fa-chart-bar me-1"></i>Reports
+            </a>
+          </li>
+          <li class="nav-item">
+            <a id="adminTab" class="nav-link" href="admin.html">
+              <i class="fas fa-cogs me-1"></i>Admin
+            </a>
+          </li>
+        </ul>
+        <span id="who" class="text-white me-3">
+          <i class="fas fa-user me-1"></i>
+          <span id="userEmail"></span>
+        </span>
+        <button id="signOutBtn" class="btn btn-outline-light btn-sm">
+          <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <div class="row">
+      <!-- ✅ Add Form -->
+      <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Register New Student</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Student ID *</label>
+                <div class="input-group">
+                  <input id="stuStudentId" class="form-control" placeholder="Auto-generated" required readonly>
+                  <button class="btn btn-outline-secondary auto-generate-btn" type="button" onclick="generateStudentId()" title="Generate New ID">
+                    <i class="fas fa-sync-alt"></i>
+                  </button>
+                </div>
+                <div class="form-text">
+                  <small>ID will be auto-generated. Click <i class="fas fa-sync-alt"></i> to regenerate.</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Full Name *</label>
+                <input id="stuName" class="form-control" placeholder="Enter full name" required>
+                <div class="invalid-feedback">Please enter student's full name.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Father's Name</label>
+                <input id="stuFather" class="form-control" placeholder="Enter father's name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input id="stuEmail" type="email" class="form-control" placeholder="Enter email address">
+                <div class="invalid-feedback">Please enter a valid email address.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Phone *</label>
+                <input id="stuPhone" type="tel" class="form-control" placeholder="Enter phone number" required>
+                <div class="invalid-feedback">Please enter a valid phone number (e.g., 03001234567).</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Batch</label>
+                <input id="stuBatch" class="form-control" placeholder="Enter batch">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Campus *</label>
+                <select id="stuCampus" class="form-select" required>
+                  <option value="">Select Campus</option>
+                  <option value="campus-a">Campus A</option>
+                  <option value="campus-b">Campus B</option>
+                </select>
+                <div class="invalid-feedback">Please select a campus.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Course *</label>
+                <select id="stuCourse" class="form-select" required>
+                  <option value="">Loading courses...</option>
+                </select>
+                <div class="invalid-feedback">Please select a course.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Student Photo</label>
+                <input id="stuPhoto" type="file" accept="image/*" class="form-control">
+                <div class="form-text">Upload a clear passport-size photo (optional, max 2MB)</div>
+                <div class="invalid-feedback">Please select a valid image file (JPEG, PNG, JPG).</div>
+              </div>
+              <div class="col-12">
+                <button id="addStudentBtn" class="btn btn-primary w-100 py-2">
+                  <i class="fas fa-save me-2"></i>Save Student
+                </button>
+                <p id="addStatus" class="text-center mt-2 mb-0"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Right Side Stats -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body text-center stats-card">
+            <i class="fas fa-users fa-2x mb-2"></i>
+            <h3 id="totalStudents">0</h3>
+            <p class="mb-0">Total Students</p>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Admissions</h6>
+          </div>
+          <div class="card-body">
+            <div id="recentList" class="list-group list-group-flush">
+              <div class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="text-muted ms-2">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-header bg-white">
+            <h6 class="mb-0"><i class="fas fa-id-card me-2"></i>Student Preview</h6>
+          </div>
+          <div class="card-body">
+            <div id="profilePreview" class="text-center text-muted">
+              <i class="fas fa-user fa-3x mb-3 text-muted"></i>
+              <p>No student selected</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app-common.js"></script>
+
+  <script>
+    // Auto-generate Student ID Function
+    function generateStudentId() {
+      const prefix = 'STU';
+      const timestamp = Date.now().toString().slice(-6);
+      const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const studentId = `${prefix}${timestamp}${randomNum}`;
+      
+      document.getElementById('stuStudentId').value = studentId;
+      
+      // Show confirmation
+      const statusEl = document.getElementById('addStatus');
+      statusEl.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>New ID generated: ' + studentId + '</span>';
+      setTimeout(() => {
+        statusEl.innerHTML = '';
+      }, 3000);
+    }
+
+    // ✅ VALIDATION FUNCTIONS
+    function validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    function validatePhone(phone) {
+      const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
+      return phoneRegex.test(phone.replace(/[- ]/g, ''));
+    }
+
+    function validateFile(file) {
+      if (!file) return true; // File is optional
+      
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      
+      if (!validTypes.includes(file.type)) {
+        return 'Please select a valid image file (JPEG, PNG, JPG, GIF).';
+      }
+      
+      if (file.size > maxSize) {
+        return 'File size must be less than 2MB.';
+      }
+      
+      return true;
+    }
+
+    function validateForm() {
+      let isValid = true;
+      
+      // Reset validation states
+      document.querySelectorAll('.is-invalid').forEach(el => {
+        el.classList.remove('is-invalid');
+      });
+      
+      document.querySelectorAll('.is-valid').forEach(el => {
+        el.classList.remove('is-valid');
+      });
+
+      // Validate Name
+      const name = document.getElementById('stuName').value.trim();
+      if (!name) {
+        document.getElementById('stuName').classList.add('is-invalid');
+        isValid = false;
+      } else {
+        document.getElementById('stuName').classList.add('is-valid');
+      }
+
+      // Validate Phone
+      const phone = document.getElementById('stuPhone').value.trim();
+      if (!phone) {
+        document.getElementById('stuPhone').classList.add('is-invalid');
+        isValid = false;
+      } else if (!validatePhone(phone)) {
+        document.getElementById('stuPhone').classList.add('is-invalid');
+        isValid = false;
+      } else {
+        document.getElementById('stuPhone').classList.add('is-valid');
+      }
+
+      // Validate Email (optional but must be valid if provided)
+      const email = document.getElementById('stuEmail').value.trim();
+      if (email && !validateEmail(email)) {
+        document.getElementById('stuEmail').classList.add('is-invalid');
+        isValid = false;
+      } else if (email) {
+        document.getElementById('stuEmail').classList.add('is-valid');
+      }
+
+      // Validate Campus
+      const campus = document.getElementById('stuCampus').value;
+      if (!campus) {
+        document.getElementById('stuCampus').classList.add('is-invalid');
+        isValid = false;
+      } else {
+        document.getElementById('stuCampus').classList.add('is-valid');
+      }
+
+      // Validate Course
+      const course = document.getElementById('stuCourse').value;
+      if (!course) {
+        document.getElementById('stuCourse').classList.add('is-invalid');
+        isValid = false;
+      } else {
+        document.getElementById('stuCourse').classList.add('is-valid');
+      }
+
+      // Validate File
+      const file = document.getElementById('stuPhoto').files[0];
+      const fileValidation = validateFile(file);
+      if (fileValidation !== true) {
+        document.getElementById('stuPhoto').classList.add('is-invalid');
+        showStatus(fileValidation, 'danger');
+        isValid = false;
+      } else if (file) {
+        document.getElementById('stuPhoto').classList.add('is-valid');
+      }
+
+      return isValid;
+    }
+
+    // Initialize when page loads
+    (async () => {
+      const user = await requireAuth();
+      if (!user) return;
+
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('who').textContent = user.email + " (" + (user.profile?.role || 'user') + ")";
+
+      document.getElementById('signOutBtn').onclick = signOutAndGoLogin;
+
+      if (user.profile?.role !== "admin") {
+        document.getElementById("adminTab").style.display = "none";
+      }
+
+      // Set campus based on user profile
+      if (user.profile?.campusId) {
+        document.getElementById('stuCampus').value = user.profile.campusId;
+        document.getElementById('stuCampus').disabled = true;
+      }
+
+      // Auto-generate student ID on page load
+      generateStudentId();
+
+      await loadCoursesForDropdown();
+      await loadRecent(user);
+      await loadStudentStats(user);
+
+      // Add real-time validation
+      setupRealTimeValidation();
+    })();
+
+    function setupRealTimeValidation() {
+      // Real-time email validation
+      document.getElementById('stuEmail').addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !validateEmail(email)) {
+          this.classList.add('is-invalid');
+        } else if (email) {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+        } else {
+          this.classList.remove('is-invalid', 'is-valid');
+        }
+      });
+
+      // Real-time phone validation
+      document.getElementById('stuPhone').addEventListener('blur', function() {
+        const phone = this.value.trim();
+        if (phone && !validatePhone(phone)) {
+          this.classList.add('is-invalid');
+        } else if (phone) {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+        }
+      });
+
+      // Real-time file validation
+      document.getElementById('stuPhoto').addEventListener('change', function() {
+        const file = this.files[0];
+        const validation = validateFile(file);
+        if (validation !== true) {
+          this.classList.add('is-invalid');
+          showStatus(validation, 'warning');
+        } else if (file) {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+          showStatus('File selected successfully!', 'success');
+          setTimeout(() => {
+            const statusEl = document.getElementById('addStatus');
+            if (statusEl) statusEl.innerHTML = '';
+          }, 2000);
+        } else {
+          this.classList.remove('is-invalid', 'is-valid');
+        }
+      });
+    }
+
+    // ✅ FIXED: Course Loading Function with Better Error Handling
+    async function loadCoursesForDropdown() {
+      const courseSelect = document.getElementById('stuCourse');
+      courseSelect.innerHTML = '<option value="">Loading courses...</option>';
+      courseSelect.disabled = true;
+      
+      try {
+        console.log('Starting to load courses...');
+        
+        // First, check if courses collection exists and has data
+        const snapshot = await db.collection('courses')
+          .where('status', '==', 'active')
+          .orderBy('name')
+          .get();
+        
+        console.log('Courses snapshot:', snapshot.size, 'courses found');
+        
+        courseSelect.innerHTML = '<option value="">Select Course *</option>';
+        
+        if (snapshot.empty) {
+          courseSelect.innerHTML = '<option value="">No active courses available</option>';
+          showStatus('No active courses found. Please add courses first from Courses page.', 'warning');
+          return;
+        }
+        
+        let coursesLoaded = 0;
+        snapshot.forEach(doc => {
+          const course = doc.data();
+          console.log('Loading course:', course.name, course.code);
+          
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = `${course.name} (${course.code}) - PKR ${course.fee}`;
+          option.setAttribute('data-duration', course.duration);
+          courseSelect.appendChild(option);
+          coursesLoaded++;
+        });
+
+        courseSelect.disabled = false;
+        console.log('Courses loaded successfully:', coursesLoaded, 'courses');
+        
+        // Show success message if this was a retry
+        const statusEl = document.getElementById('addStatus');
+        if (statusEl && statusEl.textContent.includes('Error loading courses')) {
+          showStatus('Courses loaded successfully!', 'success');
+          setTimeout(() => {
+            statusEl.innerHTML = '';
+          }, 3000);
+        }
+        
+      } catch (error) {
+        console.error('Error loading courses:', error);
+        courseSelect.innerHTML = `
+          <option value="">Error loading courses</option>
+          <option value="retry" onclick="retryLoadCourses()">Click to retry loading courses</option>
+        `;
+        showStatus('Error loading courses: ' + error.message + '. Please check console for details.', 'danger');
+        
+        // Log detailed error information
+        if (error.code === 'failed-precondition') {
+          console.error('Firestore index error. Please create the required composite index in Firebase Console.');
+        } else if (error.code === 'permission-denied') {
+          console.error('Permission denied. Please check Firestore security rules.');
+        }
+      }
+    }
+
+    // Retry function for course loading
+    window.retryLoadCourses = async function() {
+      showStatus('Retrying to load courses...', 'info');
+      await loadCoursesForDropdown();
+    };
+
+    async function loadRecent(user) {
+      const recentList = document.getElementById('recentList');
+
+      let q = db.collection("students").orderBy("createdAt", "desc").limit(5);
+
+      if (user.profile?.role === "campus_manager") {
+        q = db.collection("students")
+          .where("campusId", "==", user.profile.campusId)
+          .orderBy("createdAt", "desc")
+          .limit(5);
+      } else if (user.profile?.role === "staff") {
+        q = db.collection("students")
+          .where("createdBy", "==", user.uid)
+          .orderBy("createdAt", "desc")
+          .limit(5);
+      }
+
+      try {
+        const snap = await q.get();
+        recentList.innerHTML = '';
+        
+        if (snap.empty) {
+          recentList.innerHTML = '<div class="text-center py-3 text-muted">No students found</div>';
+          return;
+        }
+        
+        snap.forEach(doc => {
+          const s = doc.data();
+          recentList.innerHTML += `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <img src="${s.photoUrl || 'https://via.placeholder.com/40'}" 
+                     class="rounded me-3" width="40" height="40" style="object-fit: cover;">
+                <div>
+                  <div class="fw-bold small">${esc(s.name)}</div>
+                  <small class="text-muted">${esc(s.studentId)}</small>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-primary" onclick="showProfile('${doc.id}')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          `;
+        });
+      } catch (error) {
+        recentList.innerHTML = '<div class="text-center py-3 text-danger">Error loading recent students</div>';
+      }
+    }
+
+    async function loadStudentStats(user) {
+      let q = db.collection("students");
+      
+      if (user.profile?.role === "campus_manager") {
+        q = q.where("campusId", "==", user.profile.campusId);
+      } else if (user.profile?.role === "staff") {
+        q = q.where("createdBy", "==", user.uid);
+      }
+
+      try {
+        const snap = await q.get();
+        document.getElementById('totalStudents').textContent = snap.size;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    document.getElementById('addStudentBtn').onclick = async () => {
+      // First validate the form
+      if (!validateForm()) {
+        showStatus('Please correct the errors in the form before submitting.', 'danger');
+        return;
+      }
+
+      const studentId = document.getElementById('stuStudentId').value.trim();
+      const name = document.getElementById('stuName').value.trim();
+      const fatherName = document.getElementById('stuFather').value.trim();
+      const email = document.getElementById('stuEmail').value.trim();
+      const phone = document.getElementById('stuPhone').value.trim();
+      const batch = document.getElementById('stuBatch').value.trim();
+      const campusId = document.getElementById('stuCampus').value;
+      const courseId = document.getElementById('stuCourse').value;
+      const file = document.getElementById('stuPhoto').files[0];
+
+      // Check if student ID already exists
+      const existingStudent = await checkStudentIdExists(studentId);
+      if (existingStudent) {
+        showStatus('Student ID already exists. Please generate a new one.', 'danger');
+        generateStudentId(); // Auto-generate new ID
+        return;
+      }
+
+      const addBtn = document.getElementById('addStudentBtn');
+      const originalText = addBtn.innerHTML;
+      addBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+      addBtn.disabled = true;
+
+      let photoUrl = "";
+      
+      try {
+        // Upload photo if selected
+        if (file) {
+          showStatus('Uploading photo...', 'info');
+          const ref = storage.ref("student-photos/" + studentId + "-" + Date.now());
+          await ref.put(file);
+          photoUrl = await ref.getDownloadURL();
+        }
+
+        // Get course details for display
+        const courseDoc = await db.collection('courses').doc(courseId).get();
+        const courseData = courseDoc.exists ? courseDoc.data() : { name: 'Unknown Course', code: 'N/A' };
+
+        showStatus('Saving student data...', 'info');
+
+        // Save student data
+        await db.collection("students").add({
+          studentId, 
+          name, 
+          fatherName, 
+          email, 
+          phone: phone.replace(/[- ]/g, ''), // Clean phone number
+          batch,
+          campusId, 
+          courseId,
+          courseName: courseData.name,
+          courseCode: courseData.code,
+          photoUrl,
+          status: "active",
+          createdBy: auth.currentUser.uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showStatus('✅ Student saved successfully!', 'success');
+        
+        // Clear form and generate new ID
+        document.getElementById('stuName').value = '';
+        document.getElementById('stuFather').value = '';
+        document.getElementById('stuEmail').value = '';
+        document.getElementById('stuPhone').value = '';
+        document.getElementById('stuBatch').value = '';
+        document.getElementById('stuPhoto').value = '';
+        document.getElementById('stuCampus').value = '';
+        document.getElementById('stuCourse').value = '';
+        
+        // Reset validation states
+        document.querySelectorAll('.is-valid').forEach(el => {
+          el.classList.remove('is-valid');
+        });
+        
+        generateStudentId(); // Generate new ID for next student
+        
+        // Reload data
+        const user = auth.currentUser;
+        await loadRecent(user);
+        await loadStudentStats(user);
+        
+      } catch (err) {
+        console.error('Error saving student:', err);
+        showStatus('Error saving student: ' + err.message, 'danger');
+      } finally {
+        addBtn.innerHTML = originalText;
+        addBtn.disabled = false;
+      }
+    };
+
+    // Check if Student ID already exists
+    async function checkStudentIdExists(studentId) {
+      try {
+        const snapshot = await db.collection('students')
+          .where('studentId', '==', studentId)
+          .limit(1)
+          .get();
+        return !snapshot.empty;
+      } catch (error) {
+        console.error('Error checking student ID:', error);
+        return false;
+      }
+    }
+
+    function showStatus(message, type) {
+      const statusEl = document.getElementById('addStatus');
+      statusEl.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>`;
+      
+      // Auto-hide success messages after 5 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          const alert = statusEl.querySelector('.alert');
+          if (alert) {
+            alert.remove();
+          }
+        }, 5000);
+      }
+    }
+
+    window.showProfile = async (id) => {
+      const doc = await db.collection('students').doc(id).get();
+      if (!doc.exists) {
+        alert('Student record not found');
+        return;
+      }
+
+      const s = doc.data();
+      const preview = document.getElementById('profilePreview');
+      
+      preview.innerHTML = `
+        <div class="text-center">
+          <img src="${s.photoUrl || 'https://via.placeholder.com/120'}" 
+               class="preview-img mb-3" alt="Student Photo">
+          <h5>${esc(s.name)}</h5>
+          <p class="mb-1"><strong>ID:</strong> ${esc(s.studentId)}</p>
+          <p class="mb-1"><strong>Campus:</strong> ${esc(s.campusId)}</p>
+          <p class="mb-1"><strong>Course:</strong> ${esc(s.courseName || 'Not assigned')}</p>
+          <p class="mb-1"><strong>Batch:</strong> ${esc(s.batch || 'N/A')}</p>
+          <p class="mb-0"><strong>Phone:</strong> ${esc(s.phone || 'N/A')}</p>
+        </div>
+      `;
+    };
+
+    // Allow manual ID input if needed (double-click to enable)
+    document.getElementById('stuStudentId').addEventListener('dblclick', function() {
+      if (this.hasAttribute('readonly')) {
+        this.removeAttribute('readonly');
+        showStatus('ID field unlocked. You can now edit manually.', 'info');
+      }
+    });
+
+    // Re-lock ID field when it loses focus
+    document.getElementById('stuStudentId').addEventListener('blur', function() {
+      if (!this.hasAttribute('readonly')) {
+        this.setAttribute('readonly', true);
+      }
+    });
+
+    // Format phone number as user types
+    document.getElementById('stuPhone').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.startsWith('0')) {
+        value = value.substring(1);
+      }
+      if (value.length > 0) {
+        value = '0' + value;
+      }
+      if (value.length > 4) {
+        value = value.replace(/(\d{4})(\d+)/, '$1-$2');
+      }
+      if (value.length > 9) {
+        value = value.replace(/(\d{4})-(\d{3})(\d+)/, '$1-$2-$3');
+      }
+      e.target.value = value.substring(0, 12);
+    });
+  </script>
+</body>
+</html>
