@@ -5,6 +5,25 @@
 <title>Register - Student Portal</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    .is-valid {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    .password-strength {
+        height: 5px;
+        margin-top: 5px;
+        border-radius: 3px;
+    }
+    .strength-weak { background-color: #dc3545; width: 25%; }
+    .strength-fair { background-color: #fd7e14; width: 50%; }
+    .strength-good { background-color: #ffc107; width: 75%; }
+    .strength-strong { background-color: #198754; width: 100%; }
+</style>
 </head>
 <body class="bg-light">
   <div class="container py-5">
@@ -15,49 +34,106 @@
             <h3 class="card-title text-center mb-3">
               <i class="fas fa-user-plus me-2"></i>Create Account
             </h3>
-            <div class="mb-3">
-              <label class="form-label">Full Name *</label>
-              <input id="name" class="form-control" placeholder="Enter your full name" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Email *</label>
-              <input id="email" type="email" class="form-control" placeholder="Enter your email" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Password *</label>
-              <input id="password" type="password" class="form-control" placeholder="Create a password" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Role *</label>
-              <select id="role" class="form-select" required>
-                <option value="">Select Role</option>
-                <option value="staff">Staff</option>
-                <option value="campus_manager">Campus Manager</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Campus</label>
-              <select id="campus" class="form-select">
-                <option value="campus-a">Campus A</option>
-                <option value="campus-b">Campus B</option>
-              </select>
-            </div>
-            <div class="d-flex justify-content-between">
-              <button id="registerBtn" class="btn btn-primary">
-                <i class="fas fa-user-plus me-1"></i>Register
-              </button>
-              <a href="index.html" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i>Back to Sign In
-              </button>
-            </div>
+            
+            <form id="registerForm">
+              <div class="mb-3">
+                <label class="form-label">Full Name *</label>
+                <input id="name" class="form-control" placeholder="Enter your full name" required>
+                <div class="invalid-feedback">Please enter your full name.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Email *</label>
+                <input id="email" type="email" class="form-control" placeholder="Enter your email" required>
+                <div class="invalid-feedback">Please enter a valid email address.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Password *</label>
+                <input id="password" type="password" class="form-control" placeholder="Create a password" required minlength="6">
+                <div class="password-strength" id="passwordStrength"></div>
+                <div class="form-text">
+                  Password must be at least 6 characters long.
+                </div>
+                <div class="invalid-feedback">Password must be at least 6 characters long.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Confirm Password *</label>
+                <input id="confirmPassword" type="password" class="form-control" placeholder="Confirm your password" required>
+                <div class="invalid-feedback">Passwords do not match.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Role *</label>
+                <select id="role" class="form-select" required>
+                  <option value="">Select Role</option>
+                  <option value="student">Student</option>
+                  <option value="staff">Staff</option>
+                  <option value="campus_manager">Campus Manager</option>
+                  <option value="admin">Super Admin</option>
+                </select>
+                <div class="invalid-feedback">Please select a role.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Campus</label>
+                <select id="campus" class="form-select">
+                  <option value="campus-a">Campus A</option>
+                  <option value="campus-b">Campus B</option>
+                </select>
+              </div>
+              
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                <label class="form-check-label" for="termsCheck">
+                  I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                </label>
+                <div class="invalid-feedback">You must agree to the terms and conditions.</div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <button id="registerBtn" class="btn btn-primary">
+                  <i class="fas fa-user-plus me-1"></i>Register
+                </button>
+                <a href="index.html" class="btn btn-outline-secondary">
+                  <i class="fas fa-arrow-left me-1"></i>Back to Sign In
+                </a>
+              </div>
+            </form>
+            
             <div class="alert alert-info mt-3" role="alert">
               <small>
                 <i class="fas fa-info-circle me-1"></i>
-                <strong>Note:</strong> For production, create admin accounts via Firebase Console for security.
+                <strong>Note:</strong> Super Admin can only be created once. Campus Managers can add courses.
               </small>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms and Conditions Modal -->
+  <div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Terms and Conditions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <h6>User Roles and Permissions:</h6>
+          <ul>
+            <li><strong>Super Admin:</strong> Full system access (can only be created once)</li>
+            <li><strong>Campus Manager:</strong> Can manage courses and students in their campus</li>
+            <li><strong>Staff:</strong> Can add students and view reports</li>
+            <li><strong>Student:</strong> Can view their own profile and course information</li>
+          </ul>
+          <p>By registering, you agree to use this system responsibly and in accordance with institutional policies.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -70,44 +146,244 @@
 <script src="firebase-config.js"></script>
 <script src="app-common.js"></script>
 <script>
-document.getElementById('registerBtn').onclick = async ()=>{
-  const name = document.getElementById('name').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const role = document.getElementById('role').value;
-  const campus = document.getElementById('campus').value;
-  
-  if(!name || !email || !password || !role){ 
-    alert('Please fill all required fields'); 
-    return; 
-  }
+// VALIDATION FUNCTIONS
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
 
-  const registerBtn = document.getElementById('registerBtn');
-  const originalText = registerBtn.innerHTML;
-  registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Registering...';
-  registerBtn.disabled = true;
+function validatePassword(password) {
+    return password.length >= 6;
+}
 
-  try{
-    const userCred = await auth.createUserWithEmailAndPassword(email, password);
-    const uid = userCred.user.uid;
+function checkPasswordStrength(password) {
+    const strengthBar = document.getElementById('passwordStrength');
+    if (password.length === 0) {
+        strengthBar.className = 'password-strength';
+        return;
+    }
     
-    // ✅ FIXED: Correct variable name (userCred instead of uc)
-    await db.collection('users').doc(uid).set({
-      name: name,
-      email: email,
-      role: role,
-      campusId: campus || "campus-a",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    if (password.length < 3) {
+        strengthBar.className = 'password-strength strength-weak';
+    } else if (password.length < 5) {
+        strengthBar.className = 'password-strength strength-fair';
+    } else if (password.length < 6) {
+        strengthBar.className = 'password-strength strength-good';
+    } else {
+        strengthBar.className = 'password-strength strength-strong';
+    }
+}
+
+function validateForm() {
+    let isValid = true;
+    
+    // Reset validation states
+    document.querySelectorAll('.is-invalid').forEach(el => {
+        el.classList.remove('is-invalid');
     });
     
-    alert('Registration successful. Please sign in.');
-    window.location.href = 'index.html';
-  }catch(err){ 
-    alert('Registration error: '+err.message); 
-  } finally {
-    registerBtn.innerHTML = originalText;
-    registerBtn.disabled = false;
-  }
+    document.querySelectorAll('.is-valid').forEach(el => {
+        el.classList.remove('is-valid');
+    });
+
+    // Validate Name
+    const name = document.getElementById('name').value.trim();
+    if (!name) {
+        document.getElementById('name').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('name').classList.add('is-valid');
+    }
+
+    // Validate Email
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+        document.getElementById('email').classList.add('is-invalid');
+        isValid = false;
+    } else if (!validateEmail(email)) {
+        document.getElementById('email').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('email').classList.add('is-valid');
+    }
+
+    // Validate Password
+    const password = document.getElementById('password').value;
+    if (!password) {
+        document.getElementById('password').classList.add('is-invalid');
+        isValid = false;
+    } else if (!validatePassword(password)) {
+        document.getElementById('password').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('password').classList.add('is-valid');
+    }
+
+    // Validate Confirm Password
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    if (!confirmPassword) {
+        document.getElementById('confirmPassword').classList.add('is-invalid');
+        isValid = false;
+    } else if (password !== confirmPassword) {
+        document.getElementById('confirmPassword').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('confirmPassword').classList.add('is-valid');
+    }
+
+    // Validate Role
+    const role = document.getElementById('role').value;
+    if (!role) {
+        document.getElementById('role').classList.add('is-invalid');
+        isValid = false;
+    } else {
+        document.getElementById('role').classList.add('is-valid');
+    }
+
+    // Validate Terms
+    const termsChecked = document.getElementById('termsCheck').checked;
+    if (!termsChecked) {
+        document.getElementById('termsCheck').classList.add('is-invalid');
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+// CHECK IF SUPER ADMIN ALREADY EXISTS
+async function checkSuperAdminExists() {
+    try {
+        const snapshot = await db.collection('users')
+            .where('role', '==', 'admin')
+            .limit(1)
+            .get();
+        return !snapshot.empty;
+    } catch (error) {
+        console.error('Error checking super admin:', error);
+        return false;
+    }
+}
+
+// Setup real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Password strength indicator
+    document.getElementById('password').addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+    });
+
+    // Real-time email validation
+    document.getElementById('email').addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !validateEmail(email)) {
+            this.classList.add('is-invalid');
+        } else if (email) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+
+    // Real-time password confirmation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        
+        if (confirmPassword && password !== confirmPassword) {
+            this.classList.add('is-invalid');
+        } else if (confirmPassword) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+
+    // Role change handler
+    document.getElementById('role').addEventListener('change', function() {
+        if (this.value) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+});
+
+// MAIN REGISTRATION FUNCTION
+document.getElementById('registerBtn').onclick = async ()=>{
+    // First validate the form
+    if (!validateForm()) {
+        alert('Please correct the errors in the form before submitting.');
+        return;
+    }
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const campus = document.getElementById('campus').value;
+
+    const registerBtn = document.getElementById('registerBtn');
+    const originalText = registerBtn.innerHTML;
+    registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Registering...';
+    registerBtn.disabled = true;
+
+    try {
+        // CHECK IF SUPER ADMIN ALREADY EXISTS (for admin role only)
+        if (role === 'admin') {
+            const superAdminExists = await checkSuperAdminExists();
+            if (superAdminExists) {
+                alert('Super Admin already exists! Only one Super Admin account can be created.');
+                registerBtn.innerHTML = originalText;
+                registerBtn.disabled = false;
+                return;
+            }
+        }
+
+        // Create user in Firebase Auth
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = userCred.user.uid;
+        
+        // Save user data to Firestore
+        await db.collection('users').doc(uid).set({
+            name: name,
+            email: email,
+            role: role,
+            campusId: campus || "campus-a",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: 'self-registration'
+        });
+        
+        // Show success message based on role
+        let successMessage = 'Registration successful! ';
+        if (role === 'admin') {
+            successMessage += 'You have been registered as Super Admin with full system access.';
+        } else if (role === 'campus_manager') {
+            successMessage += 'You can now add courses and manage students in your campus.';
+        } else if (role === 'staff') {
+            successMessage += 'You can now add students and view reports.';
+        } else {
+            successMessage += 'You can now access your student profile.';
+        }
+        
+        alert(successMessage);
+        window.location.href = 'index.html';
+        
+    } catch(err) { 
+        console.error('Registration error:', err);
+        
+        // User-friendly error messages
+        let errorMessage = 'Registration error: ';
+        if (err.code === 'auth/email-already-in-use') {
+            errorMessage += 'This email is already registered.';
+        } else if (err.code === 'auth/weak-password') {
+            errorMessage += 'Password is too weak.';
+        } else if (err.code === 'auth/invalid-email') {
+            errorMessage += 'Invalid email address.';
+        } else {
+            errorMessage += err.message;
+        }
+        
+        alert(errorMessage);
+    } finally {
+        registerBtn.innerHTML = originalText;
+        registerBtn.disabled = false;
+    }
 }
 </script>
 </body>

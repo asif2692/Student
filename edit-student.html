@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit Student - Student Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .preview-img {
+      width: 100%;
+      max-width: 150px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+    }
+    .is-invalid {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    .is-valid {
+      border-color: #198754;
+      box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    .action-buttons .btn {
+      margin: 2px;
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <!-- Enhanced Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <i class="fas fa-graduation-cap me-2"></i>Student Portal
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div id="topNav" class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="add-student.html">
+              <i class="fas fa-user-plus me-1"></i>Add Student
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="courses.html">
+              <i class="fas fa-book me-1"></i>Courses
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="report.html">
+              <i class="fas fa-chart-bar me-1"></i>Reports
+            </a>
+          </li>
+          <li class="nav-item">
+            <a id="adminTab" class="nav-link" href="admin.html">
+              <i class="fas fa-cogs me-1"></i>Admin
+            </a>
+          </li>
+        </ul>
+        <span id="who" class="text-white me-3">
+          <i class="fas fa-user me-1"></i>
+          <span id="userEmail"></span>
+        </span>
+        <button id="signOutBtn" class="btn btn-outline-light btn-sm">
+          <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Student</h5>
+            <div class="action-buttons">
+              <button class="btn btn-warning btn-sm" onclick="generateIdCard()">
+                <i class="fas fa-id-card me-1"></i>ID Card
+              </button>
+              <button class="btn btn-success btn-sm" onclick="generateFeeSlip()">
+                <i class="fas fa-file-invoice me-1"></i>Fee Slip
+              </button>
+              <button class="btn btn-info btn-sm" onclick="window.history.back()">
+                <i class="fas fa-arrow-left me-1"></i>Back
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="loadingStudent" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted">Loading student data...</p>
+            </div>
+
+            <div id="studentForm" style="display: none;">
+              <div class="row">
+                <div class="col-md-3 text-center mb-4">
+                  <img id="studentPhoto" src="https://via.placeholder.com/150" class="preview-img mb-3" alt="Student Photo">
+                  <input type="file" id="updatePhoto" accept="image/*" class="form-control form-control-sm">
+                  <div class="form-text">Change photo (optional)</div>
+                </div>
+                
+                <div class="col-md-9">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Student ID</label>
+                      <input id="editStudentId" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Full Name *</label>
+                      <input id="editName" class="form-control" required>
+                      <div class="invalid-feedback">Please enter student's full name.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Father's Name</label>
+                      <input id="editFather" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Email</label>
+                      <input id="editEmail" type="email" class="form-control">
+                      <div class="invalid-feedback">Please enter a valid email address.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Phone *</label>
+                      <input id="editPhone" type="tel" class="form-control" required>
+                      <div class="invalid-feedback">Please enter a valid phone number.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Batch</label>
+                      <input id="editBatch" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Campus *</label>
+                      <select id="editCampus" class="form-select" required>
+                        <option value="">Select Campus</option>
+                        <option value="campus-a">Campus A</option>
+                        <option value="campus-b">Campus B</option>
+                      </select>
+                      <div class="invalid-feedback">Please select a campus.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Course *</label>
+                      <select id="editCourse" class="form-select" required>
+                        <option value="">Loading courses...</option>
+                      </select>
+                      <div class="invalid-feedback">Please select a course.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Status</label>
+                      <select id="editStatus" class="form-select">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <button id="updateStudentBtn" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Student
+                      </button>
+                      <p id="updateStatus" class="mt-2 mb-0"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="studentNotFound" class="text-center py-4" style="display: none;">
+              <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+              <h5>Student Not Found</h5>
+              <p class="text-muted">The requested student record could not be found.</p>
+              <a href="add-student.html" class="btn btn-primary">Add New Student</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app-common.js"></script>
+
+  <script>
+    let currentStudentId = null;
+    let currentStudentData = null;
+    let currentCourseFee = 0;
+
+    // Initialize when page loads
+    (async () => {
+      const user = await requireAuth();
+      if (!user) return;
+
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('who').textContent = user.email + " (" + (user.profile?.role || 'user') + ")";
+
+      document.getElementById('signOutBtn').onclick = signOutAndGoLogin;
+
+      if (user.profile?.role !== "admin") {
+        document.getElementById("adminTab").style.display = "none";
+      }
+
+      // Get student ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      currentStudentId = urlParams.get('id');
+      
+      if (!currentStudentId) {
+        showError('No student ID provided in URL.');
+        return;
+      }
+
+      await loadCoursesForDropdown();
+      await loadStudentData(currentStudentId);
+      setupEventListeners();
+    })();
+
+    function setupEventListeners() {
+      // Photo update
+      document.getElementById('updatePhoto').addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('studentPhoto').src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    async function loadStudentData(studentId) {
+      try {
+        const doc = await db.collection('students').doc(studentId).get();
+        
+        if (!doc.exists) {
+          document.getElementById('loadingStudent').style.display = 'none';
+          document.getElementById('studentNotFound').style.display = 'block';
+          return;
+        }
+
+        const student = doc.data();
+        currentStudentData = student;
+        
+        // Populate form fields
+        document.getElementById('editStudentId').value = student.studentId || '';
+        document.getElementById('editName').value = student.name || '';
+        document.getElementById('editFather').value = student.fatherName || '';
+        document.getElementById('editEmail').value = student.email || '';
+        document.getElementById('editPhone').value = student.phone || '';
+        document.getElementById('editBatch').value = student.batch || '';
+        document.getElementById('editCampus').value = student.campusId || '';
+        document.getElementById('editStatus').value = student.status || 'active';
+        
+        // Set photo
+        if (student.photoUrl) {
+          document.getElementById('studentPhoto').src = student.photoUrl;
+        }
+        
+        // Set course after courses are loaded
+        setTimeout(() => {
+          if (student.courseId) {
+            document.getElementById('editCourse').value = student.courseId;
+          }
+        }, 1000);
+
+        // Load course fee for fee slip
+        if (student.courseId) {
+          const courseDoc = await db.collection('courses').doc(student.courseId).get();
+          if (courseDoc.exists) {
+            currentCourseFee = courseDoc.data().fee || 0;
+          }
+        }
+
+        document.getElementById('loadingStudent').style.display = 'none';
+        document.getElementById('studentForm').style.display = 'block';
+
+      } catch (error) {
+        console.error('Error loading student:', error);
+        showError('Error loading student data: ' + error.message);
+      }
+    }
+
+    async function loadCoursesForDropdown() {
+      const courseSelect = document.getElementById('editCourse');
+      
+      try {
+        const snapshot = await db.collection('courses').get();
+        courseSelect.innerHTML = '<option value="">Select Course</option>';
+        
+        snapshot.forEach(doc => {
+          const course = doc.data();
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = `${course.name} (${course.code}) - PKR ${course.fee}`;
+          courseSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading courses:', error);
+        courseSelect.innerHTML = '<option value="">Error loading courses</option>';
+      }
+    }
+
+    // Update Student
+    document.getElementById('updateStudentBtn').onclick = async () => {
+      const name = document.getElementById('editName').value.trim();
+      const fatherName = document.getElementById('editFather').value.trim();
+      const email = document.getElementById('editEmail').value.trim();
+      const phone = document.getElementById('editPhone').value.trim();
+      const batch = document.getElementById('editBatch').value.trim();
+      const campusId = document.getElementById('editCampus').value;
+      const courseId = document.getElementById('editCourse').value;
+      const status = document.getElementById('editStatus').value;
+      const file = document.getElementById('updatePhoto').files[0];
+
+      if (!name || !phone || !campusId || !courseId) {
+        showStatus('Please fill all required fields', 'danger');
+        return;
+      }
+
+      const updateBtn = document.getElementById('updateStudentBtn');
+      const originalText = updateBtn.innerHTML;
+      updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+      updateBtn.disabled = true;
+
+      try {
+        let photoUrl = currentStudentData.photoUrl;
+
+        // Upload new photo if selected
+        if (file) {
+          const ref = storage.ref("student-photos/" + currentStudentData.studentId + "-" + Date.now());
+          await ref.put(file);
+          photoUrl = await ref.getDownloadURL();
+        }
+
+        // Get course name
+        const courseDoc = await db.collection('courses').doc(courseId).get();
+        const courseData = courseDoc.exists ? courseDoc.data() : { name: 'Unknown Course', code: 'N/A' };
+
+        // Update student data
+        await db.collection('students').doc(currentStudentId).update({
+          name,
+          fatherName,
+          email,
+          phone: phone.replace(/[- ]/g, ''),
+          batch,
+          campusId,
+          courseId,
+          courseName: courseData.name,
+          courseCode: courseData.code,
+          photoUrl,
+          status,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showStatus('✅ Student updated successfully!', 'success');
+        
+        // Reload student data to reflect changes
+        await loadStudentData(currentStudentId);
+        
+      } catch (error) {
+        console.error('Error updating student:', error);
+        showStatus('Error updating student: ' + error.message, 'danger');
+      } finally {
+        updateBtn.innerHTML = originalText;
+        updateBtn.disabled = false;
+      }
+    };
+
+    // Generate ID Card
+    window.generateIdCard = function() {
+      if (!currentStudentData) return;
+      
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>ID Card - ${currentStudentData.name}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .id-card { border: 2px solid #333; padding: 20px; max-width: 400px; margin: 0 auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .header { text-align: center; background: #2563eb; color: white; padding: 10px; margin: -20px -20px 20px -20px; border-radius: 8px 8px 0 0; }
+            .photo { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd; margin: 10px auto; display: block; }
+            .info { margin: 15px 0; }
+            .info-row { display: flex; justify-content: space-between; margin: 8px 0; }
+            .label { font-weight: bold; color: #555; }
+            .footer { text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="id-card">
+            <div class="header">
+              <h2>Student ID Card</h2>
+              <p>Student Portal</p>
+            </div>
+            <img src="${currentStudentData.photoUrl || 'https://via.placeholder.com/120'}" class="photo" alt="Student Photo">
+            <div class="info">
+              <div class="info-row"><span class="label">Name:</span> <span>${esc(currentStudentData.name)}</span></div>
+              <div class="info-row"><span class="label">Student ID:</span> <span>${esc(currentStudentData.studentId)}</span></div>
+              <div class="info-row"><span class="label">Course:</span> <span>${esc(currentStudentData.courseName || 'N/A')}</span></div>
+              <div class="info-row"><span class="label">Campus:</span> <span>${esc(currentStudentData.campusId)}</span></div>
+              <div class="info-row"><span class="label">Batch:</span> <span>${esc(currentStudentData.batch || 'N/A')}</span></div>
+            </div>
+            <div class="footer">
+              <p>Valid until: ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString()}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.print();
+    };
+
+    // Generate Fee Slip
+    window.generateFeeSlip = function() {
+      if (!currentStudentData) return;
+      
+      const discountPercent = prompt('Enter discount percentage (0-100):', '0') || '0';
+      const discountReason = prompt('Enter discount reason (optional):', '') || '';
+      
+      const discount = parseInt(discountPercent);
+      const discountAmount = (currentCourseFee * discount) / 100;
+      const payableAmount = currentCourseFee - discountAmount;
+      const currentDate = new Date().toLocaleDateString();
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Fee Slip - ${currentStudentData.studentId}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .fee-slip { border: 2px solid #333; padding: 20px; max-width: 500px; margin: 0 auto; border-radius: 10px; }
+            .header { text-align: center; background: #198754; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 8px 8px 0 0; }
+            .section { margin: 15px 0; }
+            .section-title { font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; }
+            .info-row { display: flex; justify-content: space-between; margin: 8px 0; }
+            .total { background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 15px 0; }
+            .footer { text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+            .discount { color: #dc3545; }
+          </style>
+        </head>
+        <body>
+          <div class="fee-slip">
+            <div class="header">
+              <h2>FEE SLIP</h2>
+              <p>Student Portal - ${currentDate}</p>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Student Information</div>
+              <div class="info-row"><span>Name:</span> <span>${esc(currentStudentData.name)}</span></div>
+              <div class="info-row"><span>Student ID:</span> <span>${esc(currentStudentData.studentId)}</span></div>
+              <div class="info-row"><span>Course:</span> <span>${esc(currentStudentData.courseName || 'N/A')}</span></div>
+              <div class="info-row"><span>Campus:</span> <span>${esc(currentStudentData.campusId)}</span></div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Fee Details</div>
+              <div class="info-row"><span>Course Fee:</span> <span>PKR ${currentCourseFee.toFixed(2)}</span></div>
+              ${discountPercent > 0 ? `
+                <div class="info-row discount"><span>Discount (${discountPercent}%):</span> <span>- PKR ${discountAmount.toFixed(2)}</span></div>
+                ${discountReason ? `<div class="info-row"><span>Discount Reason:</span> <span>${esc(discountReason)}</span></div>` : ''}
+              ` : ''}
+            </div>
+
+            <div class="total">
+              <div class="info-row"><span>Payable Amount:</span> <span>PKR ${payableAmount.toFixed(2)}</span></div>
+            </div>
+
+            <div class="footer">
+              <p>Generated on: ${currentDate}</p>
+              <p>This is a computer generated slip</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.print();
+    };
+
+    function showStatus(message, type) {
+      const statusEl = document.getElementById('updateStatus');
+      statusEl.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>`;
+    }
+
+    function showError(message) {
+      document.getElementById('loadingStudent').innerHTML = `
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          ${message}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

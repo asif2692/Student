@@ -1,4 +1,3 @@
-// Paste your Firebase config here (from Firebase Console -> Project Settings -> SDK)
 window.firebaseConfig = {
   apiKey: "AIzaSyB8OR5mQlbjdvJV9TdN8WicG3ya93pPiSY",
   authDomain: "studentportal-a8a56.firebaseapp.com",

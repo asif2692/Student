@@ -25,7 +25,6 @@
 </head>
 <body class="bg-light">
 
-<!-- ✅ Enhanced Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">
@@ -69,7 +68,7 @@
 </nav>
 
 <div class="container py-4">
-    <!-- ✅ Admin Statistics -->
+    <!-- Admin Statistics -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="stats-card p-3 text-center">
@@ -101,7 +100,7 @@
         </div>
     </div>
 
-    <!-- ✅ User Management -->
+    <!-- User Management -->
     <div class="card admin-card shadow-sm">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>User Management</h5>
@@ -278,15 +277,12 @@ function renderUsers(users) {
 
 async function loadStatistics() {
     try {
-        // Load user count
         const usersSnap = await db.collection('users').get();
         document.getElementById('totalUsers').textContent = usersSnap.size;
         
-        // Load student count
         const studentsSnap = await db.collection('students').get();
         document.getElementById('totalStudents').textContent = studentsSnap.size;
         
-        // Load course count
         const coursesSnap = await db.collection('courses').get();
         document.getElementById('totalCourses').textContent = coursesSnap.size;
         

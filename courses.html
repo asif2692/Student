@@ -42,7 +42,6 @@
 </head>
 <body class="bg-light">
 
-<!-- ✅ Enhanced Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -86,14 +85,14 @@
 </nav>
 
 <div class="container py-4">
-    <!-- ✅ Sample Courses Section (Show if no courses exist) -->
+    <!-- Sample Courses Section -->
     <div id="sampleCoursesSection" class="row mb-4" style="display: none;">
         <div class="col-12">
             <div class="card sample-courses shadow-sm">
                 <div class="card-body text-center">
                     <i class="fas fa-rocket fa-2x mb-3"></i>
                     <h4>Get Started with Sample Courses</h4>
-                    <p class="mb-3">It looks like you don't have any courses yet. Add sample courses to get started quickly!</p>
+                    <p class="mb-3">Add sample courses to get started quickly!</p>
                     <button id="addSampleCoursesBtn" class="btn btn-light">
                         <i class="fas fa-plus me-1"></i>Add Sample Courses
                     </button>
@@ -102,7 +101,7 @@
         </div>
     </div>
 
-    <!-- ✅ Statistics Cards -->
+    <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="stats-card p-3 text-center">
@@ -138,7 +137,7 @@
         </div>
     </div>
 
-    <!-- ✅ Courses Grid -->
+    <!-- Courses Grid -->
     <div class="row" id="coursesGrid">
         <div class="col-12">
             <div class="card shadow-sm">
@@ -175,7 +174,7 @@
     </div>
 </div>
 
-<!-- ✅ Add Course Modal -->
+<!-- Add Course Modal -->
 <div class="modal fade" id="addCourseModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -245,14 +244,14 @@ let currentEditingId = null;
     document.getElementById('userEmail').textContent = user.email;
     document.getElementById('who').textContent = user.email + " (" + (user.profile?.role || 'user') + ")";
     
-    // Only admin can manage courses
-    if (user.profile?.role !== 'admin') {
+    // Only admin and campus_manager can manage courses
+    if (user.profile?.role !== 'admin' && user.profile?.role !== 'campus_manager') {
         document.getElementById('coursesGrid').innerHTML = `
             <div class="col-12">
                 <div class="alert alert-danger text-center">
                     <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
                     <h4>Access Denied</h4>
-                    <p>Only administrators can manage courses.</p>
+                    <p>Only administrators and campus managers can manage courses.</p>
                     <a href="add-student.html" class="btn btn-primary">Go to Students</a>
                 </div>
             </div>
@@ -265,17 +264,11 @@ let currentEditingId = null;
 })();
 
 function setupEventListeners() {
-    // Search functionality
     document.getElementById('searchCourse').addEventListener('input', filterCourses);
     document.getElementById('filterStatus').addEventListener('change', filterCourses);
-    
-    // Save course
     document.getElementById('saveCourseBtn').onclick = saveCourse;
-    
-    // Add sample courses
     document.getElementById('addSampleCoursesBtn').onclick = addSampleCourses;
     
-    // Reset form when modal closes
     document.getElementById('addCourseModal').addEventListener('hidden.bs.modal', () => {
         document.getElementById('courseForm').reset();
         currentEditingId = null;
@@ -290,7 +283,7 @@ async function loadCourses() {
     const sampleSection = document.getElementById('sampleCoursesSection');
     
     try {
-        const snapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
+        const snapshot = await db.collection('courses').get();
         allCourses = [];
         
         snapshot.forEach(doc => {
@@ -299,6 +292,9 @@ async function loadCourses() {
                 ...doc.data()
             });
         });
+        
+        // Client-side sorting
+        allCourses.sort((a, b) => a.name.localeCompare(b.name));
         
         updateStatistics();
         renderCourses(allCourses);
@@ -324,7 +320,6 @@ async function loadCourses() {
     }
 }
 
-// Add sample courses function
 async function addSampleCourses() {
     const sampleCourses = [
         {
@@ -500,15 +495,12 @@ async function saveCourse() {
         };
         
         if (currentEditingId) {
-            // Update existing course
             await db.collection('courses').doc(currentEditingId).update(courseData);
         } else {
-            // Add new course
             courseData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             await db.collection('courses').add(courseData);
         }
         
-        // Close modal and refresh
         bootstrap.Modal.getInstance(document.getElementById('addCourseModal')).hide();
         await loadCourses();
         
@@ -526,7 +518,6 @@ window.editCourse = async (courseId) => {
     
     currentEditingId = courseId;
     
-    // Fill form with course data
     document.getElementById('courseName').value = course.name;
     document.getElementById('courseCode').value = course.code;
     document.getElementById('courseDuration').value = course.duration;
@@ -534,10 +525,8 @@ window.editCourse = async (courseId) => {
     document.getElementById('courseStatus').value = course.status;
     document.getElementById('courseDescription').value = course.description || '';
     
-    // Update modal title
     document.querySelector('.modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Course';
     
-    // Show modal
     new bootstrap.Modal(document.getElementById('addCourseModal')).show();
 };
 

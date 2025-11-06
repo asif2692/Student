@@ -5,29 +5,101 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reports - Student Portal</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+    }
+    .action-buttons .btn {
+        margin: 2px;
+    }
+    .table th {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+</style>
 </head>
 <body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Student Portal</a>
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-graduation-cap me-2"></i>Student Portal
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="topNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="add-student.html">Add Student</a></li>
-        <li class="nav-item"><a class="nav-link active" href="report.html">Reports</a></li>
-        <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="add-student.html">
+            <i class="fas fa-user-plus me-1"></i>Add Student
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="report.html">
+            <i class="fas fa-chart-bar me-1"></i>Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="courses.html">
+            <i class="fas fa-book me-1"></i>Courses
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="admin.html">
+            <i class="fas fa-cogs me-1"></i>Admin
+          </a>
+        </li>
       </ul>
-      <span id="who" class="text-white me-3"></span>
-      <button id="signOutBtn" class="btn btn-outline-light btn-sm">Sign Out</button>
+      <span id="who" class="text-white me-3">
+        <i class="fas fa-user me-1"></i>
+        <span id="userEmail"></span>
+      </span>
+      <button id="signOutBtn" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-sign-out-alt me-1"></i>Sign Out
+      </button>
     </div>
   </div>
 </nav>
 
 <div class="container py-4">
+  
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="stats-card p-3 text-center">
+        <i class="fas fa-users fa-2x mb-2"></i>
+        <h3 id="totalStudentsCount">0</h3>
+        <p class="mb-0">Total Students</p>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stats-card p-3 text-center">
+        <i class="fas fa-building fa-2x mb-2"></i>
+        <h3 id="campusACount">0</h3>
+        <p class="mb-0">Campus A</p>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stats-card p-3 text-center">
+        <i class="fas fa-building fa-2x mb-2"></i>
+        <h3 id="campusBCount">0</h3>
+        <p class="mb-0">Campus B</p>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="stats-card p-3 text-center">
+        <i class="fas fa-book fa-2x mb-2"></i>
+        <h3 id="activeStudents">0</h3>
+        <p class="mb-0">Active Students</p>
+      </div>
+    </div>
+  </div>
 
+  <!-- Filters and Export -->
   <div class="card p-3 shadow-sm mb-3">
     <div class="d-flex flex-wrap align-items-center gap-2">
       <select id="filterCampus" class="form-select w-auto">
@@ -36,28 +108,80 @@
         <option value="campus-b">Campus B</option>
       </select>
 
+      <select id="filterCourse" class="form-select w-auto">
+        <option value="">All Courses</option>
+      </select>
+
+      <select id="filterStatus" class="form-select w-auto">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="completed">Completed</option>
+      </select>
+
       <input id="searchInput" class="form-control w-auto" placeholder="Search Name or ID">
 
-      <button id="applyFilterBtn" class="btn btn-secondary btn-sm">Apply</button>
+      <button id="applyFilterBtn" class="btn btn-primary btn-sm">
+        <i class="fas fa-filter me-1"></i>Apply
+      </button>
 
-      <button id="exportCsvBtn" class="btn btn-outline-success btn-sm ms-auto">Export CSV</button>
-      <button id="exportPdfBtn" class="btn btn-outline-primary btn-sm">Export PDF</button>
+      <div class="ms-auto d-flex gap-2">
+        <button id="exportCsvBtn" class="btn btn-success btn-sm">
+          <i class="fas fa-file-csv me-1"></i>Export CSV
+        </button>
+        <button id="exportPdfBtn" class="btn btn-danger btn-sm">
+          <i class="fas fa-file-pdf me-1"></i>Export PDF
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="card shadow-sm p-3">
-
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead><tr>
-          <th>Photo</th><th>ID</th><th>Name</th><th>Campus</th><th>Batch</th><th>Created By</th>
-        </tr></thead>
-        <tbody id="reportTbody"></tbody>
-      </table>
+  <!-- Students Table -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fas fa-list me-2"></i>Students Report
+      </h5>
+      <span class="text-muted" id="resultCount">0 students found</span>
     </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Father Name</th>
+              <th>Campus</th>
+              <th>Course</th>
+              <th>Batch</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reportTbody">
+            <tr>
+              <td colspan="10" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading students data...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <ul class="pagination mt-3" id="pagination"></ul>
-
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+          Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries
+        </div>
+        <ul class="pagination mb-0" id="pagination"></ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -65,118 +189,637 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script src="firebase-config.js"></script>
 <script src="app-common.js"></script>
 
 <script>
 document.getElementById('signOutBtn').onclick = signOutAndGoLogin;
 
-let pageSize = 8, currentPage = 1, allRows = [];
+let pageSize = 10;
+let currentPage = 1;
+let allStudents = [];
+let allCourses = [];
 
-(async()=>{
-  const user = await requireAuth(); if(!user) return;
-  document.getElementById('who').textContent = user.email + " ("+user.profile.role+")";
-  applyRoleNavbar(user);
-
+(async () => {
+  const user = await requireAuth();
+  if (!user) return;
+  
+  document.getElementById('userEmail').textContent = user.email;
+  document.getElementById('who').textContent = user.email + " (" + (user.profile?.role || 'user') + ")";
+  
+  await loadCoursesForFilter();
   await loadData(user);
+  setupEventListeners();
 })();
 
-async function loadData(user){
-  const tbody = document.getElementById("reportTbody");
-  tbody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
-
-  let q = db.collection("students").orderBy("createdAt","desc");
-  const role = user.profile.role;
-
-  if(role === "campus_manager")
-    q = db.collection("students").where("campusId","==",user.profile.campusId).orderBy("createdAt","desc");
-  else if(role === "staff")
-    q = db.collection("students").where("createdBy","==",user.uid).orderBy("createdAt","desc");
-
-  const snap = await q.get();
-  allRows = [];
-  snap.forEach(doc=>{
-    const s = doc.data();
-    allRows.push({
-      id: doc.id,
-      studentId: s.studentId,
-      name: s.name,
-      campusId: s.campusId,
-      batch: s.batch,
-      createdBy: s.createdBy,
-      photoUrl: s.photoUrl
-    });
+function setupEventListeners() {
+  document.getElementById('applyFilterBtn').onclick = () => {
+    currentPage = 1;
+    applyFilters();
+    updateStatistics();
+  };
+  
+  document.getElementById('searchInput').addEventListener('input', () => {
+    currentPage = 1;
+    applyFilters();
   });
-
-  applyFilters();
+  
+  document.getElementById('filterCampus').addEventListener('change', applyFilters);
+  document.getElementById('filterCourse').addEventListener('change', applyFilters);
+  document.getElementById('filterStatus').addEventListener('change', applyFilters);
+  
+  document.getElementById('exportCsvBtn').onclick = exportToCSV;
+  document.getElementById('exportPdfBtn').onclick = exportToPDF;
 }
 
-document.getElementById("applyFilterBtn").onclick = ()=>{ currentPage=1; applyFilters(); };
-document.getElementById("searchInput").oninput = ()=>{ currentPage=1; applyFilters(); };
-
-function applyFilters(){
-  const campus = document.getElementById("filterCampus").value;
-  const text = document.getElementById("searchInput").value.trim().toLowerCase();
-  let rows = allRows;
-  if(campus) rows = rows.filter(r=>r.campusId===campus);
-  if(text) rows = rows.filter(r=> (r.name||"").toLowerCase().includes(text) || (r.studentId||"").toLowerCase().includes(text));
-  render(rows);
+async function loadCoursesForFilter() {
+  const courseSelect = document.getElementById('filterCourse');
+  
+  try {
+    const snapshot = await db.collection('courses').get();
+    courseSelect.innerHTML = '<option value="">All Courses</option>';
+    
+    snapshot.forEach(doc => {
+      const course = doc.data();
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = course.name;
+      courseSelect.appendChild(option);
+    });
+    
+    allCourses = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+  } catch (error) {
+    console.error('Error loading courses:', error);
+  }
 }
 
-function render(rows){
-  const total = rows.length;
+async function loadData(user) {
   const tbody = document.getElementById("reportTbody");
-  tbody.innerHTML = "";
+  
+  try {
+    let query = db.collection("students").orderBy("createdAt", "desc");
+    
+    // Role-based filtering
+    if (user.profile?.role === "campus_manager") {
+      query = query.where("campusId", "==", user.profile.campusId);
+    } else if (user.profile?.role === "staff") {
+      query = query.where("createdBy", "==", user.uid);
+    }
+    
+    const snap = await query.get();
+    allStudents = [];
+    
+    snap.forEach(doc => {
+      allStudents.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    updateStatistics();
+    applyFilters();
+    
+  } catch (error) {
+    console.error('Error loading students:', error);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" class="text-center text-danger py-4">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Error loading students: ${error.message}
+        </td>
+      </tr>
+    `;
+  }
+}
 
-  const start = (currentPage-1)*pageSize;
-  const pageRows = rows.slice(start,start+pageSize);
-  if(pageRows.length===0){
-    tbody.innerHTML = "<tr><td colspan='6'>No records</td></tr>";
+function applyFilters() {
+  const campusFilter = document.getElementById("filterCampus").value;
+  const courseFilter = document.getElementById("filterCourse").value;
+  const statusFilter = document.getElementById("filterStatus").value;
+  const searchText = document.getElementById("searchInput").value.trim().toLowerCase();
+  
+  let filteredStudents = allStudents;
+  
+  // Apply campus filter
+  if (campusFilter) {
+    filteredStudents = filteredStudents.filter(student => student.campusId === campusFilter);
+  }
+  
+  // Apply course filter
+  if (courseFilter) {
+    filteredStudents = filteredStudents.filter(student => student.courseId === courseFilter);
+  }
+  
+  // Apply status filter
+  if (statusFilter) {
+    filteredStudents = filteredStudents.filter(student => student.status === statusFilter);
+  }
+  
+  // Apply search filter
+  if (searchText) {
+    filteredStudents = filteredStudents.filter(student => 
+      (student.name || "").toLowerCase().includes(searchText) ||
+      (student.studentId || "").toLowerCase().includes(searchText) ||
+      (student.fatherName || "").toLowerCase().includes(searchText) ||
+      (student.phone || "").includes(searchText)
+    );
+  }
+  
+  renderTable(filteredStudents);
+  updateResultCount(filteredStudents.length);
+}
+
+function renderTable(students) {
+  const tbody = document.getElementById("reportTbody");
+  const total = students.length;
+  
+  // Calculate pagination
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, total);
+  const pageStudents = students.slice(startIndex, endIndex);
+  
+  // Update showing info
+  document.getElementById('showingFrom').textContent = total === 0 ? 0 : startIndex + 1;
+  document.getElementById('showingTo').textContent = endIndex;
+  document.getElementById('totalRecords').textContent = total;
+  
+  if (pageStudents.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" class="text-center py-4 text-muted">
+          <i class="fas fa-search fa-2x mb-3"></i>
+          <h5>No Students Found</h5>
+          <p>Try adjusting your filters or search criteria.</p>
+        </td>
+      </tr>
+    `;
     return;
   }
-
-  pageRows.forEach(r=>{
+  
+  tbody.innerHTML = '';
+  
+  pageStudents.forEach(student => {
+    const course = allCourses.find(c => c.id === student.courseId);
+    const statusBadge = student.status === 'active' ? 'badge bg-success' :
+                       student.status === 'inactive' ? 'badge bg-secondary' :
+                       'badge bg-info';
+    
     tbody.innerHTML += `
       <tr>
-        <td><img src="${r.photoUrl || 'https://via.placeholder.com/48'}" width="48" style="border-radius:6px"></td>
-        <td>${r.studentId||""}</td>
-        <td>${r.name||""}</td>
-        <td>${r.campusId||""}</td>
-        <td>${r.batch||""}</td>
-        <td>${r.createdBy||""}</td>
-      </tr>`;
+        <td>
+          <img src="${student.photoUrl || 'https://via.placeholder.com/40'}" 
+               width="40" height="40" class="rounded" style="object-fit: cover;">
+        </td>
+        <td>
+          <strong>${esc(student.studentId)}</strong>
+        </td>
+        <td>${esc(student.name)}</td>
+        <td>${esc(student.fatherName || 'N/A')}</td>
+        <td>
+          <span class="badge bg-primary">${esc(student.campusId)}</span>
+        </td>
+        <td>${esc(student.courseName || 'N/A')}</td>
+        <td>${esc(student.batch || 'N/A')}</td>
+        <td>${esc(student.phone || 'N/A')}</td>
+        <td>
+          <span class="${statusBadge}">${esc(student.status || 'active')}</span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-outline-warning" onclick="editStudent('${student.id}')" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-info" onclick="generateIdCard('${student.id}')" title="ID Card">
+              <i class="fas fa-id-card"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-success" onclick="generateFeeSlip('${student.id}')" title="Fee Slip">
+              <i class="fas fa-file-invoice"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
   });
-
-  window._currentReport = rows.map(r=>[r.studentId,r.name,r.campusId,r.batch,r.createdBy]);
-  pagination(total);
+  
+  // Store current data for export
+  window._currentReport = students.map(student => [
+    student.studentId,
+    student.name,
+    student.fatherName || 'N/A',
+    student.campusId,
+    student.courseName || 'N/A',
+    student.batch || 'N/A',
+    student.phone || 'N/A',
+    student.status || 'active'
+  ]);
+  
+  renderPagination(total);
 }
 
-function pagination(total){
-  const pages = Math.ceil(total/pageSize);
-  const pag = document.getElementById("pagination");
-  pag.innerHTML = "";
-  for(let i=1;i<=pages;i++){
-    pag.innerHTML += `<li class="page-item ${i===currentPage?'active':''}">
-      <a class="page-link" href="#">${i}</a>
-    </li>`;
-  }
-  [...pag.children].forEach((li,i)=>{
-    li.onclick=e=>{
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / pageSize);
+  const pagination = document.getElementById('pagination');
+  
+  pagination.innerHTML = '';
+  
+  if (totalPages <= 1) return;
+  
+  // Previous button
+  const prevLi = document.createElement('li');
+  prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+  prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+  prevLi.onclick = (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      applyFilters();
+    }
+  };
+  pagination.appendChild(prevLi);
+  
+  // Page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    const li = document.createElement('li');
+    li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    li.onclick = (e) => {
       e.preventDefault();
-      currentPage=i+1;
+      currentPage = i;
       applyFilters();
     };
-  });
+    pagination.appendChild(li);
+  }
+  
+  // Next button
+  const nextLi = document.createElement('li');
+  nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+  nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+  nextLi.onclick = (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      applyFilters();
+    }
+  };
+  pagination.appendChild(nextLi);
 }
 
-document.getElementById("exportCsvBtn").onclick = ()=>{
-  exportTableToCSV("students.csv", [["ID","Name","Campus","Batch","Created By"], ...window._currentReport]);
+function updateStatistics() {
+  const totalStudents = allStudents.length;
+  const campusA = allStudents.filter(s => s.campusId === 'campus-a').length;
+  const campusB = allStudents.filter(s => s.campusId === 'campus-b').length;
+  const activeStudents = allStudents.filter(s => s.status === 'active').length;
+  
+  document.getElementById('totalStudentsCount').textContent = totalStudents;
+  document.getElementById('campusACount').textContent = campusA;
+  document.getElementById('campusBCount').textContent = campusB;
+  document.getElementById('activeStudents').textContent = activeStudents;
+}
+
+function updateResultCount(count) {
+  document.getElementById('resultCount').textContent = `${count} students found`;
+}
+
+// Action Functions
+window.editStudent = function(studentId) {
+  window.location.href = `edit-student.html?id=${studentId}`;
 };
 
-document.getElementById("exportPdfBtn").onclick = ()=>{
-  exportRowsToPDF("students.pdf", window._currentReport, ["StudentID","Name","Campus","Batch","CreatedBy"]);
+window.generateIdCard = async function(studentId) {
+  try {
+    const doc = await db.collection('students').doc(studentId).get();
+    if (!doc.exists) {
+      alert('Student not found');
+      return;
+    }
+    
+    const student = doc.data();
+    let courseName = 'N/A';
+    
+    if (student.courseId) {
+      const courseDoc = await db.collection('courses').doc(student.courseId).get();
+      if (courseDoc.exists) {
+        courseName = courseDoc.data().name;
+      }
+    }
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>ID Card - ${student.name}</title>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background: #f5f5f5;
+          }
+          .id-card { 
+            background: white;
+            border: 2px solid #333; 
+            padding: 20px; 
+            max-width: 400px; 
+            margin: 0 auto; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+          }
+          .header { 
+            text-align: center; 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white; 
+            padding: 15px; 
+            margin: -20px -20px 20px -20px; 
+            border-radius: 12px 12px 0 0; 
+          }
+          .photo { 
+            width: 120px; 
+            height: 120px; 
+            object-fit: cover; 
+            border-radius: 10px; 
+            border: 3px solid #2563eb; 
+            margin: 10px auto; 
+            display: block;
+          }
+          .info { 
+            margin: 20px 0; 
+          }
+          .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 10px 0; 
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .label { 
+            font-weight: bold; 
+            color: #374151; 
+          }
+          .value {
+            color: #111827;
+            text-align: right;
+          }
+          .footer { 
+            text-align: center; 
+            margin-top: 25px; 
+            padding-top: 15px; 
+            border-top: 2px solid #e5e7eb; 
+            font-size: 12px; 
+            color: #6b7280; 
+          }
+        </style>
+      </head>
+      <body>
+        <div class="id-card">
+          <div class="header">
+            <h2 style="margin: 0; font-size: 24px;">STUDENT ID CARD</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">Student Portal System</p>
+          </div>
+          <img src="${student.photoUrl || 'https://via.placeholder.com/120?text=No+Photo'}" 
+               class="photo" alt="Student Photo">
+          <div class="info">
+            <div class="info-row">
+              <span class="label">Name:</span>
+              <span class="value">${student.name || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Student ID:</span>
+              <span class="value">${student.studentId || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Course:</span>
+              <span class="value">${courseName}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Campus:</span>
+              <span class="value">${student.campusId || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Batch:</span>
+              <span class="value">${student.batch || 'N/A'}</span>
+            </div>
+          </div>
+          <div class="footer">
+            <p style="margin: 0;"><strong>Valid Until:</strong> ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString()}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const win = window.open('', '_blank', 'width=500,height=700');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      
+      setTimeout(() => {
+        win.print();
+      }, 500);
+    }
+  } catch (error) {
+    console.error('Error generating ID card:', error);
+    alert('Error generating ID card: ' + error.message);
+  }
 };
+
+window.generateFeeSlip = async function(studentId) {
+  try {
+    const doc = await db.collection('students').doc(studentId).get();
+    if (!doc.exists) {
+      alert('Student not found');
+      return;
+    }
+    
+    const student = doc.data();
+    let courseName = 'N/A';
+    let courseFee = 0;
+    
+    if (student.courseId) {
+      const courseDoc = await db.collection('courses').doc(student.courseId).get();
+      if (courseDoc.exists) {
+        const courseData = courseDoc.data();
+        courseName = courseData.name;
+        courseFee = courseData.fee || 0;
+      }
+    }
+    
+    const discountPercent = prompt('Enter discount percentage (0-100):', '0') || '0';
+    const discountReason = prompt('Enter discount reason (optional):', '') || '';
+    
+    const discount = parseInt(discountPercent) || 0;
+    const discountAmount = (courseFee * discount) / 100;
+    const payableAmount = courseFee - discountAmount;
+    const currentDate = new Date().toLocaleDateString();
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Fee Slip - ${student.studentId}</title>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background: #f5f5f5;
+          }
+          .fee-slip { 
+            background: white;
+            border: 2px solid #333; 
+            padding: 25px; 
+            max-width: 500px; 
+            margin: 0 auto; 
+            border-radius: 12px;
+          }
+          .header { 
+            text-align: center; 
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white; 
+            padding: 20px; 
+            margin: -25px -25px 25px -25px; 
+            border-radius: 10px 10px 0 0;
+          }
+          .section { 
+            margin: 20px 0; 
+          }
+          .section-title { 
+            font-weight: bold; 
+            border-bottom: 2px solid #059669; 
+            padding-bottom: 8px; 
+            margin-bottom: 12px;
+            color: #059669;
+          }
+          .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 8px 0; 
+            padding: 6px 0;
+          }
+          .total { 
+            background: #f0fdf4; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            border: 2px solid #059669;
+          }
+          .footer { 
+            text-align: center; 
+            margin-top: 25px; 
+            padding-top: 15px; 
+            border-top: 2px solid #e5e7eb; 
+            font-size: 12px; 
+            color: #6b7280; 
+          }
+          .discount { 
+            color: #dc2626; 
+          }
+        </style>
+      </head>
+      <body>
+        <div class="fee-slip">
+          <div class="header">
+            <h1 style="margin: 0 0 5px 0;">FEE SLIP</h1>
+            <p style="margin: 0; font-size: 18px;">Student Portal System</p>
+            <p style="margin: 5px 0 0 0;">${currentDate}</p>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">STUDENT INFORMATION</div>
+            <div class="info-row">
+              <span>Name:</span>
+              <span><strong>${student.name || 'N/A'}</strong></span>
+            </div>
+            <div class="info-row">
+              <span>Student ID:</span>
+              <span>${student.studentId || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span>Course:</span>
+              <span>${courseName}</span>
+            </div>
+            <div class="info-row">
+              <span>Campus:</span>
+              <span>${student.campusId || 'N/A'}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">FEE DETAILS</div>
+            <div class="info-row">
+              <span>Course Fee:</span>
+              <span>PKR ${courseFee.toLocaleString()}</span>
+            </div>
+            ${discount > 0 ? `
+              <div class="info-row discount">
+                <span>Discount (${discount}%):</span>
+                <span>- PKR ${discountAmount.toLocaleString()}</span>
+              </div>
+              ${discountReason ? `
+              <div class="info-row">
+                <span>Discount Reason:</span>
+                <span><em>${discountReason}</em></span>
+              </div>
+              ` : ''}
+            ` : ''}
+          </div>
+
+          <div class="total">
+            <div class="info-row" style="font-weight: bold; font-size: 1.2em;">
+              <span>PAYABLE AMOUNT:</span>
+              <span>PKR ${payableAmount.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p style="margin: 0 0 5px 0;"><strong>Generated on:</strong> ${currentDate}</p>
+            <p style="margin: 0;">This is a computer generated fee slip</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const win = window.open('', '_blank', 'width=600,height=800');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      
+      setTimeout(() => {
+        win.print();
+      }, 500);
+    }
+  } catch (error) {
+    console.error('Error generating fee slip:', error);
+    alert('Error generating fee slip: ' + error.message);
+  }
+};
+
+// Export Functions
+function exportToCSV() {
+  if (!window._currentReport || window._currentReport.length === 0) {
+    alert('No data to export');
+    return;
+  }
+  
+  const headers = ["Student ID", "Name", "Father Name", "Campus", "Course", "Batch", "Phone", "Status"];
+  const csvData = [headers, ...window._currentReport];
+  
+  exportTableToCSV("students_report.csv", csvData);
+}
+
+function exportToPDF() {
+  if (!window._currentReport || window._currentReport.length === 0) {
+    alert('No data to export');
+    return;
+  }
+  
+  const headers = ["StudentID", "Name", "FatherName", "Campus", "Course", "Batch", "Phone", "Status"];
+  exportRowsToPDF("students_report.pdf", window._currentReport, headers);
+}
 </script>
 </body>
 </html>

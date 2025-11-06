@@ -44,7 +44,7 @@
 
 <body class="bg-light">
 
-  <!-- ✅ Enhanced Navbar -->
+  <!-- Enhanced Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
@@ -89,7 +89,7 @@
 
   <div class="container py-4">
     <div class="row">
-      <!-- ✅ Add Form -->
+      <!-- Add Form -->
       <div class="col-lg-8">
         <div class="card shadow-sm mb-4">
           <div class="card-header bg-primary text-white">
@@ -165,7 +165,7 @@
         </div>
       </div>
 
-      <!-- ✅ Right Side Stats -->
+      <!-- Right Side Stats -->
       <div class="col-lg-4">
         <div class="card shadow-sm mb-4">
           <div class="card-body text-center stats-card">
@@ -232,7 +232,7 @@
       }, 3000);
     }
 
-    // ✅ VALIDATION FUNCTIONS
+    // VALIDATION FUNCTIONS
     function validateEmail(email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(email);
@@ -411,78 +411,57 @@
       });
     }
 
-    // ✅ FIXED: Course Loading Function with Better Error Handling
+    // FIXED: Course Loading Function with Better Error Handling
     async function loadCoursesForDropdown() {
       const courseSelect = document.getElementById('stuCourse');
       courseSelect.innerHTML = '<option value="">Loading courses...</option>';
-      courseSelect.disabled = true;
       
       try {
-        console.log('Starting to load courses...');
-        
-        // First, check if courses collection exists and has data
-        const snapshot = await db.collection('courses')
-          .where('status', '==', 'active')
-          .orderBy('name')
-          .get();
-        
-        console.log('Courses snapshot:', snapshot.size, 'courses found');
+        // SIMPLE QUERY - No filtering that requires index
+        const snapshot = await db.collection('courses').get();
         
         courseSelect.innerHTML = '<option value="">Select Course *</option>';
         
         if (snapshot.empty) {
-          courseSelect.innerHTML = '<option value="">No active courses available</option>';
-          showStatus('No active courses found. Please add courses first from Courses page.', 'warning');
+          courseSelect.innerHTML = '<option value="">No courses available</option>';
+          showStatus('No courses found. Please add courses first from Courses page.', 'warning');
           return;
         }
         
-        let coursesLoaded = 0;
+        const courses = [];
         snapshot.forEach(doc => {
           const course = doc.data();
-          console.log('Loading course:', course.name, course.code);
-          
-          const option = document.createElement('option');
-          option.value = doc.id;
-          option.textContent = `${course.name} (${course.code}) - PKR ${course.fee}`;
-          option.setAttribute('data-duration', course.duration);
-          courseSelect.appendChild(option);
-          coursesLoaded++;
+          courses.push({
+            id: doc.id,
+            ...course
+          });
         });
-
-        courseSelect.disabled = false;
-        console.log('Courses loaded successfully:', coursesLoaded, 'courses');
         
-        // Show success message if this was a retry
-        const statusEl = document.getElementById('addStatus');
-        if (statusEl && statusEl.textContent.includes('Error loading courses')) {
-          showStatus('Courses loaded successfully!', 'success');
-          setTimeout(() => {
-            statusEl.innerHTML = '';
-          }, 3000);
+        // Client-side filtering and sorting
+        const activeCourses = courses.filter(course => course.status === 'active');
+        activeCourses.sort((a, b) => a.name.localeCompare(b.name));
+        
+        if (activeCourses.length === 0) {
+          courseSelect.innerHTML = '<option value="">No active courses</option>';
+          showStatus('No active courses found.', 'warning');
+          return;
         }
+        
+        activeCourses.forEach(course => {
+          const option = document.createElement('option');
+          option.value = course.id;
+          option.textContent = `${course.name} (${course.code}) - PKR ${course.fee}`;
+          courseSelect.appendChild(option);
+        });
+        
+        console.log('Loaded', activeCourses.length, 'active courses');
         
       } catch (error) {
         console.error('Error loading courses:', error);
-        courseSelect.innerHTML = `
-          <option value="">Error loading courses</option>
-          <option value="retry" onclick="retryLoadCourses()">Click to retry loading courses</option>
-        `;
-        showStatus('Error loading courses: ' + error.message + '. Please check console for details.', 'danger');
-        
-        // Log detailed error information
-        if (error.code === 'failed-precondition') {
-          console.error('Firestore index error. Please create the required composite index in Firebase Console.');
-        } else if (error.code === 'permission-denied') {
-          console.error('Permission denied. Please check Firestore security rules.');
-        }
+        courseSelect.innerHTML = '<option value="">Error loading courses</option>';
+        showStatus('Error loading courses. Please try again.', 'danger');
       }
     }
-
-    // Retry function for course loading
-    window.retryLoadCourses = async function() {
-      showStatus('Retrying to load courses...', 'info');
-      await loadCoursesForDropdown();
-    };
 
     async function loadRecent(user) {
       const recentList = document.getElementById('recentList');
@@ -522,9 +501,14 @@
                   <small class="text-muted">${esc(s.studentId)}</small>
                 </div>
               </div>
-              <button class="btn btn-sm btn-outline-primary" onclick="showProfile('${doc.id}')">
-                <i class="fas fa-eye"></i>
-              </button>
+              <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="showProfile('${doc.id}')">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="editStudent('${doc.id}')">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </div>
             </div>
           `;
         });
@@ -704,6 +688,10 @@
           <p class="mb-0"><strong>Phone:</strong> ${esc(s.phone || 'N/A')}</p>
         </div>
       `;
+    };
+
+    window.editStudent = function(studentId) {
+      window.location.href = `edit-student.html?id=${studentId}`;
     };
 
     // Allow manual ID input if needed (double-click to enable)

@@ -35,7 +35,6 @@ function signOutAndGoLogin(){ auth.signOut().then(()=> window.location.href='ind
 
 // CSV export helper
 function exportTableToCSV(filename, rows){
-  // rows: array of arrays
   const csvContent = rows.map(r=> r.map(c => '"' + String(c||'').replace(/"/g,'""') + '"').join(',')).join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
@@ -79,7 +78,7 @@ async function exportRowsToPDF(filename, rows, columns){
 // simple safe escape for insertion into text
 function esc(s){ return String(s||''); }
 
-// ✅ NEW: Generate unique student ID
+// Generate unique student ID
 function generateUniqueStudentId() {
   const prefix = 'STU';
   const timestamp = Date.now().toString().slice(-6);
@@ -87,7 +86,7 @@ function generateUniqueStudentId() {
   return `${prefix}${timestamp}${randomNum}`;
 }
 
-// ✅ NEW: Check if student ID exists
+// Check if student ID exists
 async function checkStudentIdExists(studentId) {
   try {
     const snapshot = await db.collection('students')
@@ -101,7 +100,7 @@ async function checkStudentIdExists(studentId) {
   }
 }
 
-// ✅ NEW: Load courses with error handling
+// Load courses with error handling
 async function loadCourses(status = 'active') {
   try {
     let query = db.collection('courses');
@@ -127,7 +126,7 @@ async function loadCourses(status = 'active') {
   }
 }
 
-// ✅ NEW: Navigation helper for role-based access
+// Navigation helper for role-based access
 function applyRoleNavbar(user) {
   const adminTab = document.getElementById('adminTab');
   if (adminTab && user.profile?.role !== 'admin') {
