@@ -39,6 +39,13 @@
       border-color: #198754;
       box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
     }
+    .photo-preview {
+      max-width: 150px;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #dee2e6;
+    }
   </style>
 </head>
 
@@ -148,12 +155,23 @@
                 </select>
                 <div class="invalid-feedback">Please select a course.</div>
               </div>
+              
+              <!-- Photo Upload Section -->
               <div class="col-12">
                 <label class="form-label">Student Photo</label>
                 <input id="stuPhoto" type="file" accept="image/*" class="form-control">
                 <div class="form-text">Upload a clear passport-size photo (optional, max 2MB)</div>
                 <div class="invalid-feedback">Please select a valid image file (JPEG, PNG, JPG).</div>
+                
+                <!-- Photo Preview -->
+                <div id="photoPreviewContainer" class="mt-2" style="display: none;">
+                  <img id="photoPreview" class="photo-preview" alt="Photo Preview">
+                  <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removePhoto()">
+                    <i class="fas fa-times"></i> Remove
+                  </button>
+                </div>
               </div>
+              
               <div class="col-12">
                 <button id="addStudentBtn" class="btn btn-primary w-100 py-2">
                   <i class="fas fa-save me-2"></i>Save Student
@@ -210,11 +228,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="app-common.js"></script>
 
   <script>
+    let currentPhotoBase64 = null;
+
     // Auto-generate Student ID Function
     function generateStudentId() {
       const prefix = 'STU';
@@ -390,25 +409,109 @@
         }
       });
 
-      // Real-time file validation
+      // Real-time file validation and base64 conversion
       document.getElementById('stuPhoto').addEventListener('change', function() {
         const file = this.files[0];
         const validation = validateFile(file);
+        
         if (validation !== true) {
           this.classList.add('is-invalid');
           showStatus(validation, 'warning');
+          removePhotoPreview();
         } else if (file) {
+          // Convert to base64 and show preview
+          convertImageToBase64(file);
           this.classList.remove('is-invalid');
           this.classList.add('is-valid');
-          showStatus('File selected successfully!', 'success');
+        } else {
+          this.classList.remove('is-invalid', 'is-valid');
+          removePhotoPreview();
+        }
+      });
+    }
+
+    // Convert image to base64 with compression
+    function convertImageToBase64(file) {
+      showStatus('Processing image...', 'info');
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Create canvas for compression
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Set maximum dimensions
+          const maxWidth = 400;
+          const maxHeight = 400;
+          let width = img.width;
+          let height = img.height;
+          
+          // Calculate new dimensions while maintaining aspect ratio
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress image
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to base64 with quality compression
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          currentPhotoBase64 = compressedBase64;
+          
+          // Show preview
+          showPhotoPreview(compressedBase64);
+          showStatus('Photo processed successfully!', 'success');
+          
           setTimeout(() => {
             const statusEl = document.getElementById('addStatus');
             if (statusEl) statusEl.innerHTML = '';
           }, 2000);
-        } else {
-          this.classList.remove('is-invalid', 'is-valid');
-        }
-      });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Show photo preview
+    function showPhotoPreview(base64String) {
+      const previewContainer = document.getElementById('photoPreviewContainer');
+      const previewImg = document.getElementById('photoPreview');
+      
+      previewImg.src = base64String;
+      previewContainer.style.display = 'block';
+    }
+
+    // Remove photo preview
+    function removePhotoPreview() {
+      const previewContainer = document.getElementById('photoPreviewContainer');
+      const fileInput = document.getElementById('stuPhoto');
+      
+      previewContainer.style.display = 'none';
+      fileInput.value = '';
+      currentPhotoBase64 = null;
+    }
+
+    // Remove photo button handler
+    function removePhoto() {
+      removePhotoPreview();
+      showStatus('Photo removed', 'info');
+      setTimeout(() => {
+        const statusEl = document.getElementById('addStatus');
+        if (statusEl) statusEl.innerHTML = '';
+      }, 2000);
     }
 
     // FIXED: Course Loading Function with Better Error Handling
@@ -417,7 +520,6 @@
       courseSelect.innerHTML = '<option value="">Loading courses...</option>';
       
       try {
-        // SIMPLE QUERY - No filtering that requires index
         const snapshot = await db.collection('courses').get();
         
         courseSelect.innerHTML = '<option value="">Select Course *</option>';
@@ -491,10 +593,13 @@
         
         snap.forEach(doc => {
           const s = doc.data();
+          // Use base64 photo if available, otherwise placeholder
+          const photoSrc = s.photoBase64 || (s.photoUrl || 'https://via.placeholder.com/40');
+          
           recentList.innerHTML += `
             <div class="list-group-item d-flex justify-content-between align-items-center">
               <div class="d-flex align-items-center">
-                <img src="${s.photoUrl || 'https://via.placeholder.com/40'}" 
+                <img src="${photoSrc}" 
                      class="rounded me-3" width="40" height="40" style="object-fit: cover;">
                 <div>
                   <div class="fw-bold small">${esc(s.name)}</div>
@@ -534,6 +639,7 @@
       }
     }
 
+    // MAIN SAVE FUNCTION - BASE64 VERSION
     document.getElementById('addStudentBtn').onclick = async () => {
       // First validate the form
       if (!validateForm()) {
@@ -549,7 +655,6 @@
       const batch = document.getElementById('stuBatch').value.trim();
       const campusId = document.getElementById('stuCampus').value;
       const courseId = document.getElementById('stuCourse').value;
-      const file = document.getElementById('stuPhoto').files[0];
 
       // Check if student ID already exists
       const existingStudent = await checkStudentIdExists(studentId);
@@ -564,25 +669,15 @@
       addBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
       addBtn.disabled = true;
 
-      let photoUrl = "";
-      
       try {
-        // Upload photo if selected
-        if (file) {
-          showStatus('Uploading photo...', 'info');
-          const ref = storage.ref("student-photos/" + studentId + "-" + Date.now());
-          await ref.put(file);
-          photoUrl = await ref.getDownloadURL();
-        }
+        showStatus('Saving student data...', 'info');
 
         // Get course details for display
         const courseDoc = await db.collection('courses').doc(courseId).get();
         const courseData = courseDoc.exists ? courseDoc.data() : { name: 'Unknown Course', code: 'N/A' };
 
-        showStatus('Saving student data...', 'info');
-
-        // Save student data
-        await db.collection("students").add({
+        // Prepare student data
+        const studentData = {
           studentId, 
           name, 
           fatherName, 
@@ -593,30 +688,25 @@
           courseId,
           courseName: courseData.name,
           courseCode: courseData.code,
-          photoUrl,
           status: "active",
           createdBy: auth.currentUser.uid,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
 
-        showStatus('✅ Student saved successfully!', 'success');
+        // Add base64 photo if available
+        if (currentPhotoBase64) {
+          studentData.photoBase64 = currentPhotoBase64;
+          studentData.hasPhoto = true;
+        }
+
+        // Save student data to Firestore
+        await db.collection("students").add(studentData);
+
+        showStatus('✅ Student saved successfully with photo!', 'success');
         
         // Clear form and generate new ID
-        document.getElementById('stuName').value = '';
-        document.getElementById('stuFather').value = '';
-        document.getElementById('stuEmail').value = '';
-        document.getElementById('stuPhone').value = '';
-        document.getElementById('stuBatch').value = '';
-        document.getElementById('stuPhoto').value = '';
-        document.getElementById('stuCampus').value = '';
-        document.getElementById('stuCourse').value = '';
-        
-        // Reset validation states
-        document.querySelectorAll('.is-valid').forEach(el => {
-          el.classList.remove('is-valid');
-        });
-        
+        resetForm();
         generateStudentId(); // Generate new ID for next student
         
         // Reload data
@@ -624,7 +714,7 @@
         await loadRecent(user);
         await loadStudentStats(user);
         
-      } catch (err) {
+      } catch(err) {
         console.error('Error saving student:', err);
         showStatus('Error saving student: ' + err.message, 'danger');
       } finally {
@@ -632,6 +722,26 @@
         addBtn.disabled = false;
       }
     };
+
+    // Reset form function
+    function resetForm() {
+      document.getElementById('stuName').value = '';
+      document.getElementById('stuFather').value = '';
+      document.getElementById('stuEmail').value = '';
+      document.getElementById('stuPhone').value = '';
+      document.getElementById('stuBatch').value = '';
+      document.getElementById('stuPhoto').value = '';
+      document.getElementById('stuCampus').value = '';
+      document.getElementById('stuCourse').value = '';
+      
+      // Reset validation states
+      document.querySelectorAll('.is-valid').forEach(el => {
+        el.classList.remove('is-valid');
+      });
+      
+      // Remove photo preview
+      removePhotoPreview();
+    }
 
     // Check if Student ID already exists
     async function checkStudentIdExists(studentId) {
@@ -676,9 +786,12 @@
       const s = doc.data();
       const preview = document.getElementById('profilePreview');
       
+      // Use base64 photo if available
+      const photoSrc = s.photoBase64 || (s.photoUrl || 'https://via.placeholder.com/120');
+      
       preview.innerHTML = `
         <div class="text-center">
-          <img src="${s.photoUrl || 'https://via.placeholder.com/120'}" 
+          <img src="${photoSrc}" 
                class="preview-img mb-3" alt="Student Photo">
           <h5>${esc(s.name)}</h5>
           <p class="mb-1"><strong>ID:</strong> ${esc(s.studentId)}</p>
@@ -712,18 +825,22 @@
     // Format phone number as user types
     document.getElementById('stuPhone').addEventListener('input', function(e) {
       let value = e.target.value.replace(/\D/g, '');
+      
+      // Remove leading zero if present
       if (value.startsWith('0')) {
         value = value.substring(1);
       }
+      
+      // Apply formatting based on digit count only
       if (value.length > 0) {
         value = '0' + value;
+        
+        if (value.length > 4) {
+          value = value.substring(0, 4) + '-' + value.substring(4);
+        }
       }
-      if (value.length > 4) {
-        value = value.replace(/(\d{4})(\d+)/, '$1-$2');
-      }
-      if (value.length > 9) {
-        value = value.replace(/(\d{4})-(\d{3})(\d+)/, '$1-$2-$3');
-      }
+      
+      // Limit to 11 characters
       e.target.value = value.substring(0, 12);
     });
   </script>
